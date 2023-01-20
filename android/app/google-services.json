@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "876574075071",
+    "project_id": "madam-d8cd5",
+    "storage_bucket": "madam-d8cd5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:876574075071:android:fc96bb9c4766b9fa8a7e0a",
+        "android_client_info": {
+          "package_name": "com.example.madam_admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "876574075071-7tqmf3gpd47vfktuviuvgcaft39u69gc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwSzk8500Q7qGBXBYzU4AU2MytptfJ9ZI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "876574075071-7tqmf3gpd47vfktuviuvgcaft39u69gc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "876574075071-9hfc799vdkqdqma68917l07kbn6kmrmi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.madamAdmin"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

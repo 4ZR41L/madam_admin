@@ -21,7 +21,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
   String newIngredientKey = '';
   String newIngredientValue = '';
   List<String> preparation = ['Sahil', 'Mikayil', "Rail"];
-  String preparationStep = ' ';
+  String preparationStep = '';
   int preparationStepIndex = 100;
 
   List<Map> ingredients = [];
@@ -33,76 +33,77 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           onPressed: () {}, child: const Icon(Icons.done_outline_sharp)),
       backgroundColor: Colors.indigo[100],
       body: SafeArea(
-          child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: ListView(
-          children: [
-            const Text('Yeni məhsul əlavə edin:',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.indigo,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold)),
-            Padding(
-              padding: const EdgeInsets.all(15),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
-                      Expanded(child: nameFiled()),
-                      Expanded(
-                        child: imageField(),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 60,
-                    child: ListView(
-                      // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      // crossAxisAlignment: CrossAxisAlignment.center,
-                      // mainAxisSize: MainAxisSize.max,
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.all(5),
-
-                      children: [
-                        ingredientsField(),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.05,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: ListView(
+            children: [
+              const Text('Yeni məhsul əlavə edin:',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Colors.indigo,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.all(15),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: const [
+                        Expanded(child: nameFiled()),
+                        Expanded(
+                          child: imageField(),
                         ),
-                        const timeField(),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.05,
-                        ),
-                        const caloryField(),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.05,
-                        ),
-                        const budgetField(),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.05,
-                        ),
-                        categorySelector()
                       ],
                     ),
-                  ),
-                  ingredientsList(),
-                  const preparationHeader(),
-                  preparationField(context),
-                  preparationList(context),
-                ],
+                    SizedBox(
+                      height: 60,
+                      child: ListView(
+                        // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        // crossAxisAlignment: CrossAxisAlignment.center,
+                        // mainAxisSize: MainAxisSize.max,
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(5),
+
+                        children: [
+                          ingredientsField(),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.05,
+                          ),
+                          const timeField(),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.05,
+                          ),
+                          const caloryField(),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.05,
+                          ),
+                          const budgetField(),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.05,
+                          ),
+                          categorySelector()
+                        ],
+                      ),
+                    ),
+                    ingredientsList(),
+                    const preparationHeader(),
+                    preparationField(context),
+                    preparationList(context),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),),
+      ),
     );
   }
 
@@ -165,7 +166,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
         mainAxisSize: MainAxisSize.max,
         children: [
           SizedBox(
-            width: MediaQuery.of(context).size.width * 0.7,
+            width: MediaQuery.of(context).size.width * 0.6,
             child: TextField(
               controller: TextEditingController(text: preparationStep),
               onChanged: (value) => preparationStep = value,
@@ -178,8 +179,10 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
+              style:
+                  ButtonStyle(shape: MaterialStatePropertyAll(CircleBorder())),
               onPressed: () {
-                if (preparationStep != ' ') {
+                if (preparationStep != '') {
                   if (preparationStepIndex == 100) {
                     preparation.add(preparationStep);
                   } else {
@@ -187,7 +190,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                   }
 
                   setState(() {
-                    preparationStep = ' ';
+                    preparationStep = '';
                     preparationStepIndex == 100;
                   });
                 }
