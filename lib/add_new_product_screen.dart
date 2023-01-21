@@ -1,6 +1,8 @@
 // ignore_for_file: camel_case_types
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class AddNewProductScreen extends StatefulWidget {
   const AddNewProductScreen({Key? key}) : super(key: key);
@@ -17,20 +19,101 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     "Dietik yeməklər",
   ];
 
+  static String? name;
+  static String? imagePath;
   String? selectedCategory = "Ət yeməkləri";
+  List<Map> ingredients = [];
+  List<String> preparation = [];
+  static int? calori;
+  static int? budgetIndex;
+  static int? cookingTime;
+
   String newIngredientKey = '';
   String newIngredientValue = '';
-  List<String> preparation = ['Sahil', 'Mikayil', "Rail"];
   String preparationStep = '';
   int preparationStepIndex = 100;
 
-  List<Map> ingredients = [];
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  static var productsDatabase;
+  static List<String> products = [];
+
+  Future <void> getProductsList() async {
+
+    //ToDo there is some error, need to fix
+    productsDatabase = await firestore.collection('products');
+    var productsList = await productsDatabase!.get();
+
+    for (var i  in productsList){
+      products.add(i!['name']);
+    }
+
+
+    print(productsList!.docs[0]!['name']);
+
+
+  }
+
+  @override
+  void initState() {
+
+    getProductsList();
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-          onPressed: () {}, child: const Icon(Icons.done_outline_sharp)),
+          onPressed: () {
+            if (name != null &&
+                imagePath != null &&
+                calori != null &&
+                budgetIndex != null &&
+                cookingTime != null &&
+                ingredients.isNotEmpty &&
+                preparation.isNotEmpty) {
+              productsDatabase.add({
+                'name': name,
+                'imagePath': imagePath,
+                'calori': calori,
+                'budgetIndex': budgetIndex,
+                'cookingTime': cookingTime,
+                'category': selectedCategory,
+                'ingredients': ingredients,
+                'preparation': preparation
+              });
+            } else {
+              String snackBarText = '';
+
+              if (name == null) {
+                snackBarText = "Məhsulun adı daxil edilməyib";
+              } else if (imagePath == null) {
+                snackBarText = "Məhsulun şəkili daxil edilməyib";
+              } else if (ingredients.isEmpty) {
+                snackBarText = "İstifad edilən ərzaqlar daxil edilməyib";
+              } else if (calori == null) {
+                snackBarText = "Məhsulun kalori dəyəri daxil edilməyib";
+              } else if (cookingTime == null) {
+                snackBarText = "Məhsulun hazırlanma vaxtı daxil edilməyib";
+              } else if (budgetIndex == null) {
+                snackBarText = "Məhsulun maddi dəyəri daxil edilməyib";
+              } else if (preparation.isEmpty) {
+                snackBarText = "Hazırlama mərhələləri daxil edilməyib";
+              }
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.indigo,
+                  content:
+                      Text('Bütün bölmələr doldurulmalıdır: $snackBarText'),
+                  action: SnackBarAction(
+                      label: "Oldu", textColor: Colors.white, onPressed: () {}),
+                ),
+              );
+            }
+          },
+          child: const Icon(Icons.done_outline_sharp)),
       backgroundColor: Colors.indigo[100],
       body: SafeArea(
         child: Padding(
@@ -61,39 +144,56 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: 60,
-                      child: ListView(
-                        // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        // crossAxisAlignment: CrossAxisAlignment.center,
-                        // mainAxisSize: MainAxisSize.max,
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.all(5),
-
-                        children: [
-                          ingredientsField(),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.05,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        categorySelector(),
+                        MultiSelectDialogField(
+                          searchable: true,
+                          items: [
+                            for (var i in products)
+                              MultiSelectItem(products.indexOf(i), i),
+                          ],
+                          title: const Text("Məhsullar"),
+                          selectedColor: Colors.blue,
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.1),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(40)),
+                            border: Border.all(
+                              color: Colors.indigo,
+                              width: 1,
+                            ),
                           ),
-                          const timeField(),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.05,
+                          buttonIcon: const Icon(Icons.chevron_right),
+                          buttonText: const Text(
+                            "Əlaqəli məhsullar",
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 16,
+                            ),
                           ),
-                          const caloryField(),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.05,
-                          ),
-                          const budgetField(),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.05,
-                          ),
-                          categorySelector()
-                        ],
-                      ),
+                          onConfirm: (results) {
+                            //_selectedAnimals = results;
+                          },
+                        ),
+                      ],
                     ),
+                    SizedBox(height: 20,),
+                    ingredientsField(),
                     ingredientsList(),
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: const [
+                        timeField(),
+                        caloryField(),
+                        budgetField(),
+                      ],
+                    ),
                     const preparationHeader(),
                     preparationField(context),
                     preparationList(context),
@@ -179,8 +279,8 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
-              style:
-                  ButtonStyle(shape: MaterialStatePropertyAll(CircleBorder())),
+              style: const ButtonStyle(
+                  shape: MaterialStatePropertyAll(CircleBorder())),
               onPressed: () {
                 if (preparationStep != '') {
                   if (preparationStepIndex == 100) {
@@ -260,13 +360,19 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
-          width: 140,
+          width: MediaQuery.of(context).size.width * 0.3,
           child: TextField(
             controller: TextEditingController(text: newIngredientKey),
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              label: Text("Ərzaq"),
+              label: Text(
+                "Ərzaq",
+                style: TextStyle(
+                  fontSize: 12,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
             keyboardType: TextInputType.text,
             maxLines: 1,
@@ -284,12 +390,18 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           ),
         ),
         SizedBox(
-          width: 140,
+          width: MediaQuery.of(context).size.width * 0.3,
           child: TextField(
             controller: TextEditingController(text: newIngredientValue),
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              label: Text("Miqdar"),
+              label: Text(
+                "Miqdar",
+                style: TextStyle(
+                  fontSize: 12,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
             keyboardType: TextInputType.text,
             maxLines: 1,
@@ -360,11 +472,14 @@ class budgetField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 140,
+      width: MediaQuery.of(context).size.width * 0.3,
       child: TextField(
         decoration: const InputDecoration(
           border: OutlineInputBorder(),
-          label: Text("Büdcə"),
+          label: Text(
+            "Büdcə",
+            style: TextStyle(fontSize: 12),
+          ),
           suffixText: '/ 5',
           prefixIcon: Icon(Icons.scale_outlined),
           counterText: '',
@@ -373,7 +488,9 @@ class budgetField extends StatelessWidget {
         maxLines: 1,
         maxLength: 1,
         textAlign: TextAlign.center,
-        onSubmitted: (value) {},
+        onChanged: (value) {
+          _AddNewProductScreenState.budgetIndex = int.parse(value);
+        },
       ),
     );
   }
@@ -387,17 +504,25 @@ class caloryField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 140,
+      width: MediaQuery.of(context).size.width * 0.3,
       child: TextField(
         decoration: const InputDecoration(
             border: OutlineInputBorder(),
-            label: Text('Kalori'),
+            label: Text(
+              'Kalori',
+              style: TextStyle(fontSize: 12),
+            ),
             suffixText: 'kal.',
-            prefixIcon: Icon(Icons.scale_outlined)),
+            prefixIcon: Icon(
+              Icons.scale_outlined,
+              size: 18,
+            )),
         keyboardType: TextInputType.number,
         maxLines: 1,
         textAlign: TextAlign.center,
-        onSubmitted: (value) {},
+        onChanged: (value) {
+          _AddNewProductScreenState.calori = int.parse(value);
+        },
       ),
     );
   }
@@ -411,17 +536,25 @@ class timeField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 140,
+      width: MediaQuery.of(context).size.width * 0.3,
       child: TextField(
         decoration: const InputDecoration(
             border: OutlineInputBorder(),
-            label: Text('Müddət'),
+            label: Text(
+              'Müddət',
+              style: TextStyle(fontSize: 12),
+            ),
             suffixText: 'dəq.',
-            prefixIcon: Icon(Icons.timer)),
+            prefixIcon: Icon(
+              Icons.timer,
+              size: 18,
+            )),
         keyboardType: TextInputType.number,
         maxLines: 1,
         textAlign: TextAlign.center,
-        onSubmitted: (value) {},
+        onChanged: (value) {
+          _AddNewProductScreenState.cookingTime = int.parse(value);
+        },
       ),
     );
   }
@@ -444,7 +577,9 @@ class imageField extends StatelessWidget {
         maxLines: 1,
         showCursor: true,
         keyboardType: TextInputType.text,
-        onSubmitted: (value) {},
+        onChanged: (value) {
+          _AddNewProductScreenState.imagePath = value.toString();
+        },
         expands: false,
         scrollPhysics: const BouncingScrollPhysics(),
         decoration: const InputDecoration(
@@ -477,7 +612,9 @@ class nameFiled extends StatelessWidget {
         maxLines: 1,
         showCursor: true,
         keyboardType: TextInputType.text,
-        onSubmitted: (value) {},
+        onChanged: (value) {
+          _AddNewProductScreenState.name = value.toString();
+        },
         expands: false,
         scrollPhysics: const BouncingScrollPhysics(),
         decoration: const InputDecoration(
