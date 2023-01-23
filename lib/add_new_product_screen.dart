@@ -2,7 +2,17 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:multi_select_flutter/multi_select_flutter.dart';
+import 'package:get/get.dart';
+import 'package:madam_admin/controller.dart';
+import 'package:madam_admin/widgets/add_new_product_button.dart';
+import 'package:madam_admin/widgets/budget_field.dart';
+import 'package:madam_admin/widgets/calori_field.dart';
+import 'package:madam_admin/widgets/constants.dart';
+import 'package:madam_admin/widgets/image_field.dart';
+import 'package:madam_admin/widgets/name_field.dart';
+import 'package:madam_admin/widgets/preparation_header.dart';
+import 'package:madam_admin/widgets/related_products_field.dart';
+import 'package:madam_admin/widgets/time_field.dart';
 
 class AddNewProductScreen extends StatefulWidget {
   const AddNewProductScreen({Key? key}) : super(key: key);
@@ -12,6 +22,7 @@ class AddNewProductScreen extends StatefulWidget {
 }
 
 class _AddNewProductScreenState extends State<AddNewProductScreen> {
+  Controller controller = Get.put(Controller());
   final List<String> categories = [
     "Ət yeməkləri",
     "Toyuq yeməkləri",
@@ -19,43 +30,37 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     "Dietik yeməklər",
   ];
 
-  static String? name;
-  static String? imagePath;
   String? selectedCategory = "Ət yeməkləri";
   List<Map> ingredients = [];
   List<String> preparation = [];
-  static int? calori;
-  static int? budgetIndex;
-  static int? cookingTime;
+
 
   String newIngredientKey = '';
   String newIngredientValue = '';
   String preparationStep = '';
   int preparationStepIndex = 100;
+  List relatedProducts = [];
 
+  //FireStore settings
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   static var productsDatabase;
-  static List<String> products = [];
+  static List<String> productNames = [];
+  static List allProducts = [];
 
-  Future <void> getProductsList() async {
+  Future<void> getProductsList() async {
+    productsDatabase = await firestore.collection('products').get();
 
-    //ToDo there is some error, need to fix
-    productsDatabase = await firestore.collection('products');
-    var productsList = await productsDatabase!.get();
+    allProducts = productsDatabase.docs;
 
-    for (var i  in productsList){
-      products.add(i!['name']);
+    for (var i in allProducts) {
+      productNames.add(i['name']);
     }
 
-
-    print(productsList!.docs[0]!['name']);
-
-
+    setState(() {});
   }
 
   @override
   void initState() {
-
     getProductsList();
 
     super.initState();
@@ -64,66 +69,22 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            if (name != null &&
-                imagePath != null &&
-                calori != null &&
-                budgetIndex != null &&
-                cookingTime != null &&
-                ingredients.isNotEmpty &&
-                preparation.isNotEmpty) {
-              productsDatabase.add({
-                'name': name,
-                'imagePath': imagePath,
-                'calori': calori,
-                'budgetIndex': budgetIndex,
-                'cookingTime': cookingTime,
-                'category': selectedCategory,
-                'ingredients': ingredients,
-                'preparation': preparation
-              });
-            } else {
-              String snackBarText = '';
-
-              if (name == null) {
-                snackBarText = "Məhsulun adı daxil edilməyib";
-              } else if (imagePath == null) {
-                snackBarText = "Məhsulun şəkili daxil edilməyib";
-              } else if (ingredients.isEmpty) {
-                snackBarText = "İstifad edilən ərzaqlar daxil edilməyib";
-              } else if (calori == null) {
-                snackBarText = "Məhsulun kalori dəyəri daxil edilməyib";
-              } else if (cookingTime == null) {
-                snackBarText = "Məhsulun hazırlanma vaxtı daxil edilməyib";
-              } else if (budgetIndex == null) {
-                snackBarText = "Məhsulun maddi dəyəri daxil edilməyib";
-              } else if (preparation.isEmpty) {
-                snackBarText = "Hazırlama mərhələləri daxil edilməyib";
-              }
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  backgroundColor: Colors.indigo,
-                  content:
-                      Text('Bütün bölmələr doldurulmalıdır: $snackBarText'),
-                  action: SnackBarAction(
-                      label: "Oldu", textColor: Colors.white, onPressed: () {}),
-                ),
-              );
-            }
-          },
-          child: const Icon(Icons.done_outline_sharp)),
-      backgroundColor: Colors.indigo[100],
+      floatingActionButton: AddProductButton(
+        ingredients: ingredients,
+        preparation: preparation,
+        productsDatabase: productsDatabase,
+        selectedCategory: selectedCategory,
+      ),
+      backgroundColor: primaryColor100,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: ListView(
             children: [
-              const Text('Yeni məhsul əlavə edin:',
+              Text('Yeni məhsul əlavə edin:',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: Colors.indigo,
+                      color: primaryColor,
                       fontSize: 30,
                       fontWeight: FontWeight.bold)),
               Padding(
@@ -137,7 +98,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      children: const [
+                      children: [
                         Expanded(child: nameFiled()),
                         Expanded(
                           child: imageField(),
@@ -150,45 +111,22 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         categorySelector(),
-                        MultiSelectDialogField(
-                          searchable: true,
-                          items: [
-                            for (var i in products)
-                              MultiSelectItem(products.indexOf(i), i),
-                          ],
-                          title: const Text("Məhsullar"),
-                          selectedColor: Colors.blue,
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(40)),
-                            border: Border.all(
-                              color: Colors.indigo,
-                              width: 1,
-                            ),
-                          ),
-                          buttonIcon: const Icon(Icons.chevron_right),
-                          buttonText: const Text(
-                            "Əlaqəli məhsullar",
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 16,
-                            ),
-                          ),
-                          onConfirm: (results) {
-                            //_selectedAnimals = results;
-                          },
-                        ),
+                        RelatedProductField(
+                            productNames: productNames,
+                            relatedProducts: relatedProducts,
+                            allProducts: allProducts),
                       ],
                     ),
-                    SizedBox(height: 20,),
+                    const SizedBox(
+                      height: 20,
+                    ),
                     ingredientsField(),
                     ingredientsList(),
                     Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      children: const [
+                      children: [
                         timeField(),
                         caloryField(),
                         budgetField(),
@@ -221,7 +159,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
               title: Text(i.toString()),
               shape: const RoundedRectangleBorder(),
               textColor: Colors.white,
-              tileColor: Colors.indigo[300],
+              tileColor: primaryColor300   ,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -315,7 +253,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
               Card(
                 margin: const EdgeInsets.symmetric(horizontal: 5),
                 shape: const StadiumBorder(),
-                color: Colors.indigo[500],
+                color: primaryColor,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Center(
@@ -382,11 +320,11 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
             },
           ),
         ),
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 10),
           child: Text(
             '-',
-            style: TextStyle(fontSize: 30, color: Colors.indigo),
+            style: TextStyle(fontSize: 30, color: primaryColor),
           ),
         ),
         SizedBox(
@@ -412,14 +350,16 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           ),
         ),
         IconButton(
-            color: Colors.indigo,
+            color: primaryColor,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             onPressed: () {
-              setState(() {
-                ingredients.add({newIngredientKey: newIngredientValue});
-              });
-              newIngredientKey = '';
-              newIngredientValue = '';
+              if (newIngredientKey != '' && newIngredientValue != '') {
+                setState(() {
+                  ingredients.add({newIngredientKey: newIngredientValue});
+                });
+                newIngredientKey = '';
+                newIngredientValue = '';
+              }
             },
             icon: const Icon(Icons.done_all))
       ],
@@ -442,189 +382,6 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           selectedCategory = value;
         });
       },
-    );
-  }
-}
-
-class preparationHeader extends StatelessWidget {
-  const preparationHeader({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(15),
-      child: Text(
-        "Hazırlanma addımları: ",
-        style: TextStyle(
-            color: Colors.indigo, fontSize: 20, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class budgetField extends StatelessWidget {
-  const budgetField({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.3,
-      child: TextField(
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          label: Text(
-            "Büdcə",
-            style: TextStyle(fontSize: 12),
-          ),
-          suffixText: '/ 5',
-          prefixIcon: Icon(Icons.scale_outlined),
-          counterText: '',
-        ),
-        keyboardType: TextInputType.number,
-        maxLines: 1,
-        maxLength: 1,
-        textAlign: TextAlign.center,
-        onChanged: (value) {
-          _AddNewProductScreenState.budgetIndex = int.parse(value);
-        },
-      ),
-    );
-  }
-}
-
-class caloryField extends StatelessWidget {
-  const caloryField({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.3,
-      child: TextField(
-        decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            label: Text(
-              'Kalori',
-              style: TextStyle(fontSize: 12),
-            ),
-            suffixText: 'kal.',
-            prefixIcon: Icon(
-              Icons.scale_outlined,
-              size: 18,
-            )),
-        keyboardType: TextInputType.number,
-        maxLines: 1,
-        textAlign: TextAlign.center,
-        onChanged: (value) {
-          _AddNewProductScreenState.calori = int.parse(value);
-        },
-      ),
-    );
-  }
-}
-
-class timeField extends StatelessWidget {
-  const timeField({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.3,
-      child: TextField(
-        decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            label: Text(
-              'Müddət',
-              style: TextStyle(fontSize: 12),
-            ),
-            suffixText: 'dəq.',
-            prefixIcon: Icon(
-              Icons.timer,
-              size: 18,
-            )),
-        keyboardType: TextInputType.number,
-        maxLines: 1,
-        textAlign: TextAlign.center,
-        onChanged: (value) {
-          _AddNewProductScreenState.cookingTime = int.parse(value);
-        },
-      ),
-    );
-  }
-}
-
-class imageField extends StatelessWidget {
-  const imageField({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(14.0),
-      child: TextField(
-        textAlign: TextAlign.start,
-        enabled: true,
-        autofocus: true,
-        cursorColor: Colors.indigo,
-        maxLines: 1,
-        showCursor: true,
-        keyboardType: TextInputType.text,
-        onChanged: (value) {
-          _AddNewProductScreenState.imagePath = value.toString();
-        },
-        expands: false,
-        scrollPhysics: const BouncingScrollPhysics(),
-        decoration: const InputDecoration(
-          prefixIcon: Icon(Icons.image),
-          label: Text(
-            "Şəkil",
-            style: TextStyle(fontSize: 20),
-          ),
-          border: OutlineInputBorder(),
-        ),
-      ),
-    );
-  }
-}
-
-class nameFiled extends StatelessWidget {
-  const nameFiled({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(14.0),
-      child: TextField(
-        textAlign: TextAlign.start,
-        enabled: true,
-        autofocus: true,
-        cursorColor: Colors.indigo,
-        maxLines: 1,
-        showCursor: true,
-        keyboardType: TextInputType.text,
-        onChanged: (value) {
-          _AddNewProductScreenState.name = value.toString();
-        },
-        expands: false,
-        scrollPhysics: const BouncingScrollPhysics(),
-        decoration: const InputDecoration(
-          label: Text(
-            "Adı",
-            style: TextStyle(fontSize: 20),
-          ),
-          border: OutlineInputBorder(),
-        ),
-      ),
     );
   }
 }
