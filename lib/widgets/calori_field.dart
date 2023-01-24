@@ -3,11 +3,11 @@ import 'package:get/get.dart';
 
 import '../controller.dart';
 
-class caloryField extends StatelessWidget {
+class CaloryField extends StatelessWidget {
 
-  Controller controller = Get.find();
+  final Controller controller = Get.find();
 
-   caloryField({
+   CaloryField({
     Key? key,
   }) : super(key: key);
 
@@ -16,23 +16,22 @@ class caloryField extends StatelessWidget {
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.3,
       child: TextField(
+        controller: controller.caloriFieldController,
         decoration: const InputDecoration(
             border: OutlineInputBorder(),
             label: Text(
               'Kalori',
-              style: TextStyle(fontSize: 12),
+              style: TextStyle(fontSize: 10),
             ),
-            suffixText: 'kal.',
+            suffixText: 'kal.',suffixStyle: TextStyle(fontSize: 8),
             prefixIcon: Icon(
               Icons.scale_outlined,
-              size: 18,
+              size: 12,
             )),
         keyboardType: TextInputType.number,
         maxLines: 1,
         textAlign: TextAlign.center,
-        onChanged: (value) {
-          controller.calori = int.parse(value);
-        },
+
       ),
     );
   }

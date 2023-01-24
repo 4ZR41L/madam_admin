@@ -1,64 +1,91 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:madam_admin/product.dart';
 
 import '../controller.dart';
 
 class AddProductButton extends StatelessWidget {
-
   AddProductButton({
     Key? key,
-
-    required this.ingredients,
-    required this.preparation,
-    required this.productsDatabase,
-    required this.selectedCategory,
   }) : super(key: key);
 
-  final List<Map> ingredients;
-  final List<String> preparation;
-  final productsDatabase;
-  final String? selectedCategory;
   final Controller controller = Get.find();
+
+  clearTextFields() {
+    controller.imagePathController.text = '';
+    controller.nameFieldController.text = '';
+    controller.timeFieldController.text = '';
+    controller.budgetFieldController.text = '';
+    controller.caloriFieldController.text = '';
+    controller.preparationStepController.text = '';
+    controller.ingredientKeyController.text = '';
+    controller.ingredientValueController.text = '';
+
+    controller.relatedProducts.clear();
+    controller.ingredients.clear();
+    controller.preparation.clear();
+
+  }
 
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
         onPressed: () {
-          if (controller.name != '' &&
-              controller.imagePath != '' &&
-              controller.calori != 0 &&
-              controller.budgetIndex != 0 &&
-              controller.cookingTime != 0 &&
-              ingredients.isNotEmpty &&
-              preparation.isNotEmpty) {
-            productsDatabase.add({
-              'name': controller.name,
-              'imagePath': controller.imagePath,
-              'calori': controller.calori,
-              'budgetIndex': controller.budgetIndex,
-              'cookingTime': controller.cookingTime,
-              'category': selectedCategory,
-              'ingredients': ingredients,
-              'preparation': preparation,
-              //"relatedProducts" : relatedProducts
-            });
+          if (controller.nameFieldController.text.trim().isNotEmpty &&
+              controller.imagePathController.text.trim().isNotEmpty &&
+              controller.caloriFieldController.text.trim().isNotEmpty &&
+              controller.budgetFieldController.text.trim().isNotEmpty &&
+              controller.timeFieldController.text.trim().isNotEmpty &&
+              controller.timeFieldController.text.trim().isNumericOnly &&
+              controller.caloriFieldController.text.trim().isNumericOnly &&
+              controller.budgetFieldController.text.trim().isNumericOnly &&
+              controller.ingredients.isNotEmpty &&
+              controller.preparation.isNotEmpty) {
+            Product(
+                    controller.nameFieldController.text.trim(),
+                    controller.imagePathController.text.trim(),
+                    controller.selectedCategory,
+                    controller.ingredients,
+                    int.parse(controller.caloriFieldController.text.trim()),
+                    int.parse(controller.budgetFieldController.text.trim()),
+                    int.parse(controller.timeFieldController.text.trim()),
+                    controller.preparation,
+                    controller.relatedProducts)
+                .addProduct();
+
+            clearTextFields();
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: Colors.indigo,
+                content: const Text("Məhsul əlavə edildi!"),
+                action: SnackBarAction(
+                    label: "Oldu", textColor: Colors.white, onPressed: () {}),
+              ),
+            );
           } else {
             String snackBarText = '';
 
-            if (controller.name == '') {
+            if (controller.nameFieldController.text.trim().isEmpty) {
               snackBarText = "Məhsulun adı daxil edilməyib";
-            } else if (controller.imagePath == '') {
+            } else if (controller.imagePathController.text.trim().isEmpty) {
               snackBarText = "Məhsulun şəkili daxil edilməyib";
-            } else if (ingredients.isEmpty) {
+            } else if (controller.ingredients.isEmpty) {
               snackBarText = "İstifad edilən ərzaqlar daxil edilməyib";
-            } else if (controller.calori == 0) {
+            } else if (controller.caloriFieldController.text.trim().isEmpty) {
               snackBarText = "Məhsulun kalori dəyəri daxil edilməyib";
-            } else if (controller.cookingTime == 0) {
+            } else if (controller.timeFieldController.text.trim().isEmpty) {
               snackBarText = "Məhsulun hazırlanma vaxtı daxil edilməyib";
-            } else if (controller.budgetIndex == 0) {
+            } else if (controller.budgetFieldController.text.trim().isEmpty) {
               snackBarText = "Məhsulun maddi dəyəri daxil edilməyib";
-            } else if (preparation.isEmpty) {
+            } else if (controller.preparation.isEmpty) {
               snackBarText = "Hazırlama mərhələləri daxil edilməyib";
+            }else if (!controller.caloriFieldController.text.isNumericOnly) {
+              snackBarText = "Kalori dəyərinə yalnız rəqəm daxil edə bilərsiniz!";
+            }else if (!controller.timeFieldController.text.isNumericOnly) {
+              snackBarText = "Bişirilmə müddətinə yalnız rəqəm daxil edə bilərsiniz!";
+            }else if (!controller.budgetFieldController.text.isNumericOnly) {
+              snackBarText = "Büdcə indeksinə yalnız rəqəm daxil edə bilərsiniz!";
             }
 
             ScaffoldMessenger.of(context).showSnackBar(

@@ -3,9 +3,9 @@ import 'package:get/get.dart';
 
 import '../controller.dart';
 
-class nameFiled extends StatelessWidget {
-  Controller controller = Get.find();
-   nameFiled({
+class NameFiled extends StatelessWidget {
+  final Controller controller = Get.find();
+   NameFiled({
     Key? key,
   }) : super(key: key);
 
@@ -14,6 +14,7 @@ class nameFiled extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(14.0),
       child: TextField(
+        controller: controller.nameFieldController,
         textAlign: TextAlign.start,
         enabled: true,
         autofocus: true,
@@ -21,10 +22,7 @@ class nameFiled extends StatelessWidget {
         maxLines: 1,
         showCursor: true,
         keyboardType: TextInputType.text,
-        onChanged: (value) {
-          controller.name = value.toString();
-          print(controller.name);
-        },
+
         expands: false,
         scrollPhysics: const BouncingScrollPhysics(),
         decoration: const InputDecoration(

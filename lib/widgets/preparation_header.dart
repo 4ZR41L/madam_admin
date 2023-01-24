@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class preparationHeader extends StatelessWidget {
-  const preparationHeader({
+class PreparationHeader extends StatelessWidget {
+  const PreparationHeader({
     Key? key,
   }) : super(key: key);
 

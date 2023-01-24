@@ -3,10 +3,10 @@ import 'package:get/get.dart';
 
 import '../controller.dart';
 
-class imageField extends StatelessWidget {
+class ImageField extends StatelessWidget {
 
-  Controller controller = Get.find();
-   imageField({
+  final Controller controller = Get.find();
+   ImageField({
     Key? key,
   }) : super(key: key);
 
@@ -15,6 +15,7 @@ class imageField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(14.0),
       child: TextField(
+        controller: controller.imagePathController,
         textAlign: TextAlign.start,
         enabled: true,
         autofocus: true,
@@ -22,16 +23,14 @@ class imageField extends StatelessWidget {
         maxLines: 1,
         showCursor: true,
         keyboardType: TextInputType.text,
-        onChanged: (value) {
-          controller.imagePath = value.toString();
-        },
+
         expands: false,
         scrollPhysics: const BouncingScrollPhysics(),
         decoration: const InputDecoration(
-          prefixIcon: Icon(Icons.image),
+          prefixIcon: Icon(Icons.image, size: 14,),
           label: Text(
             "Şəkil",
-            style: TextStyle(fontSize: 20),
+            style: TextStyle(fontSize: 14),
           ),
           border: OutlineInputBorder(),
         ),

@@ -1,5 +1,3 @@
-// ignore_for_file: camel_case_types
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,8 +9,10 @@ import 'package:madam_admin/widgets/constants.dart';
 import 'package:madam_admin/widgets/image_field.dart';
 import 'package:madam_admin/widgets/name_field.dart';
 import 'package:madam_admin/widgets/preparation_header.dart';
-import 'package:madam_admin/widgets/related_products_field.dart';
 import 'package:madam_admin/widgets/time_field.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
+
+import 'functions/get_products_from_firestore.dart';
 
 class AddNewProductScreen extends StatefulWidget {
   const AddNewProductScreen({Key? key}) : super(key: key);
@@ -30,63 +30,47 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     "Dietik yeməklər",
   ];
 
-  String? selectedCategory = "Ət yeməkləri";
-  List<Map> ingredients = [];
-  List<String> preparation = [];
-
-
-  String newIngredientKey = '';
-  String newIngredientValue = '';
-  String preparationStep = '';
   int preparationStepIndex = 100;
-  List relatedProducts = [];
 
   //FireStore settings
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  static var productsDatabase;
-  static List<String> productNames = [];
-  static List allProducts = [];
+  late Iterable<dynamic> productNames;
+  Map<dynamic, dynamic> allProducts = {};
 
-  Future<void> getProductsList() async {
-    productsDatabase = await firestore.collection('products').get();
-
-    allProducts = productsDatabase.docs;
-
-    for (var i in allProducts) {
-      productNames.add(i['name']);
-    }
+  Future<Iterable> getProductNames() async {
+    allProducts = await getProductNamesFromFirestore();
+    productNames = allProducts.keys;
+    controller.allProductsCount.value = allProducts.length;
 
     setState(() {});
+
+    return productNames;
   }
 
   @override
   void initState() {
-    getProductsList();
-
+    //call this function and add as list to related products dropdown select
+    getProductNames();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: AddProductButton(
-        ingredients: ingredients,
-        preparation: preparation,
-        productsDatabase: productsDatabase,
-        selectedCategory: selectedCategory,
-      ),
+      floatingActionButton: AddProductButton(),
       backgroundColor: primaryColor100,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: ListView(
             children: [
-              Text('Yeni məhsul əlavə edin:',
+              Obx(() => Text(
+                  'Yeni məhsul əlavə edin (${controller.allProductsCount})',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: primaryColor,
                       fontSize: 30,
-                      fontWeight: FontWeight.bold)),
+                      fontWeight: FontWeight.bold))),
               Padding(
                 padding: const EdgeInsets.all(15),
                 child: Column(
@@ -99,9 +83,9 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Expanded(child: nameFiled()),
+                        Expanded(child: NameFiled()),
                         Expanded(
-                          child: imageField(),
+                          child: ImageField(),
                         ),
                       ],
                     ),
@@ -111,11 +95,45 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         categorySelector(),
-                        RelatedProductField(
-                            productNames: productNames,
-                            relatedProducts: relatedProducts,
-                            allProducts: allProducts),
                       ],
+                    ),
+                    MultiSelectDialogField(
+                      separateSelectedItems: true,
+                      searchable: true,
+                      searchHint: 'Axtar',
+                      cancelText: const Text("Ləğv et"),
+                      confirmText: const Text('Seç'),
+                      items: [
+                        for (var i in allProducts.keys) MultiSelectItem(i, i)
+                      ],
+                      title: const Text("Məhsullar"),
+                      selectedColor: Colors.indigo,
+                      decoration: BoxDecoration(
+                        color: Colors.indigo.withOpacity(0.1),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(40)),
+                        border: Border.all(
+                          color: primaryColor!,
+                          width: 1,
+                        ),
+                      ),
+                      buttonIcon: const Icon(Icons.chevron_right),
+                      buttonText: const Text(
+                        "Əlaqəli məhsullar",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 16,
+                        ),
+                      ),
+                      onConfirm: (results) {
+                        controller.relatedProducts.clear();
+
+                        for (var i in results) {
+                          controller.relatedProducts.add(allProducts[i]);
+                        }
+
+                        //_selectedAnimals = results;
+                      },
                     ),
                     const SizedBox(
                       height: 20,
@@ -127,12 +145,12 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        timeField(),
-                        caloryField(),
-                        budgetField(),
+                        TimeField(),
+                        CaloryField(),
+                        BudgetField(),
                       ],
                     ),
-                    const preparationHeader(),
+                    const PreparationHeader(),
                     preparationField(context),
                     preparationList(context),
                   ],
@@ -145,54 +163,55 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     );
   }
 
-  ListView preparationList(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(10),
-      scrollDirection: Axis.vertical,
-      physics: const BouncingScrollPhysics(),
-      shrinkWrap: true,
-      children: [
-        for (var i in preparation)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ListTile(
-              title: Text(i.toString()),
-              shape: const RoundedRectangleBorder(),
-              textColor: Colors.white,
-              tileColor: primaryColor300   ,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  IconButton(
-                      onPressed: () {
-                        setState(() {
-                          preparation.remove(i);
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.white,
-                      )),
-                  IconButton(
-                      onPressed: () {
-                        setState(() {
-                          preparationStep = i;
+  Obx preparationList(BuildContext context) {
+    return Obx(() => ListView(
+          padding: const EdgeInsets.all(10),
+          scrollDirection: Axis.vertical,
+          physics: const BouncingScrollPhysics(),
+          shrinkWrap: true,
+          children: [
+            for (var i in controller.preparation)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListTile(
+                  title: Text(i.toString()),
+                  shape: const RoundedRectangleBorder(),
+                  textColor: Colors.white,
+                  tileColor: primaryColor300,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      IconButton(
+                          onPressed: () {
+                            setState(() {
+                              controller.preparation.remove(i);
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          )),
+                      IconButton(
+                          onPressed: () {
+                            setState(() {
+                              controller.preparationStepController.text = i;
 
-                          preparationStepIndex = preparation.indexOf(i);
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.edit,
-                        color: Colors.white,
-                      )),
-                ],
-              ),
-            ),
-          )
-      ],
-    );
+                              preparationStepIndex =
+                                  controller.preparation.indexOf(i);
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                          )),
+                    ],
+                  ),
+                ),
+              )
+          ],
+        ));
   }
 
   Padding preparationField(BuildContext context) {
@@ -206,8 +225,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.6,
             child: TextField(
-              controller: TextEditingController(text: preparationStep),
-              onChanged: (value) => preparationStep = value,
+              controller: controller.preparationStepController,
               textAlign: TextAlign.left,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
@@ -220,15 +238,19 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
               style: const ButtonStyle(
                   shape: MaterialStatePropertyAll(CircleBorder())),
               onPressed: () {
-                if (preparationStep != '') {
+                if (controller.preparationStepController.text
+                    .trim()
+                    .isNotEmpty) {
                   if (preparationStepIndex == 100) {
-                    preparation.add(preparationStep);
+                    controller.preparation
+                        .add(controller.preparationStepController.text);
                   } else {
-                    preparation[preparationStepIndex] = preparationStep;
+                    controller.preparation[preparationStepIndex] =
+                        controller.preparationStepController.text;
                   }
 
                   setState(() {
-                    preparationStep = '';
+                    controller.preparationStepController.text = '';
                     preparationStepIndex == 100;
                   });
                 }
@@ -246,47 +268,47 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
       padding: const EdgeInsets.all(14.0),
       child: SizedBox(
         height: 50,
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          children: [
-            for (var i in ingredients)
-              Card(
-                margin: const EdgeInsets.symmetric(horizontal: 5),
-                shape: const StadiumBorder(),
-                color: primaryColor,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        IconButton(
-                            onPressed: () {
-                              setState(() {
-                                ingredients.remove(i);
-                              });
-                            },
-                            icon: const Icon(
-                              Icons.clear_rounded,
-                              color: Colors.white,
-                              size: 25,
-                            )),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 10),
-                          child: Text(
-                            " ${i.values.first} ${i.keys.first}",
-                            style: const TextStyle(color: Colors.white),
-                          ),
+        child: Obx(() => ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                for (var i in controller.ingredients)
+                  Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 5),
+                    shape: const StadiumBorder(),
+                    color: primaryColor,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    controller.ingredients.remove(i);
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.clear_rounded,
+                                  color: Colors.white,
+                                  size: 25,
+                                )),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 10),
+                              child: Text(
+                                " ${i.values.first} ${i.keys.first}",
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              )
-          ],
-        ),
+                  )
+              ],
+            )),
       ),
     );
   }
@@ -300,7 +322,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
         SizedBox(
           width: MediaQuery.of(context).size.width * 0.3,
           child: TextField(
-            controller: TextEditingController(text: newIngredientKey),
+            controller: controller.ingredientKeyController,
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
@@ -315,13 +337,10 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
             keyboardType: TextInputType.text,
             maxLines: 1,
             textAlign: TextAlign.center,
-            onChanged: (value) {
-              newIngredientKey = value;
-            },
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Text(
             '-',
             style: TextStyle(fontSize: 30, color: primaryColor),
@@ -330,7 +349,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
         SizedBox(
           width: MediaQuery.of(context).size.width * 0.3,
           child: TextField(
-            controller: TextEditingController(text: newIngredientValue),
+            controller: controller.ingredientValueController,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
               label: Text(
@@ -344,21 +363,22 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
             keyboardType: TextInputType.text,
             maxLines: 1,
             textAlign: TextAlign.center,
-            onChanged: (value) {
-              newIngredientValue = value;
-            },
           ),
         ),
         IconButton(
             color: primaryColor,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             onPressed: () {
-              if (newIngredientKey != '' && newIngredientValue != '') {
+              if (controller.ingredientKeyController.text.trim().isNotEmpty &&
+                  controller.ingredientValueController.text.trim().isNotEmpty) {
                 setState(() {
-                  ingredients.add({newIngredientKey: newIngredientValue});
+                  controller.ingredients.add({
+                    controller.ingredientKeyController.text:
+                        controller.ingredientValueController.text
+                  });
                 });
-                newIngredientKey = '';
-                newIngredientValue = '';
+                controller.ingredientKeyController.text = '';
+                controller.ingredientValueController.text = '';
               }
             },
             icon: const Icon(Icons.done_all))
@@ -370,7 +390,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     return DropdownButton<String>(
       menuMaxHeight: 300,
       alignment: Alignment.center,
-      value: selectedCategory,
+      value: controller.selectedCategory,
       items: categories.map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
@@ -379,7 +399,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
       }).toList(),
       onChanged: (value) {
         setState(() {
-          selectedCategory = value;
+          controller.selectedCategory = value!;
         });
       },
     );
