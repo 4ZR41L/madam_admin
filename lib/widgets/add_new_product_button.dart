@@ -24,7 +24,6 @@ class AddProductButton extends StatelessWidget {
     controller.relatedProducts.clear();
     controller.ingredients.clear();
     controller.preparation.clear();
-
   }
 
   @override
@@ -45,6 +44,7 @@ class AddProductButton extends StatelessWidget {
                     controller.nameFieldController.text.trim(),
                     controller.imagePathController.text.trim(),
                     controller.selectedCategory,
+                    controller.selectedCountry,
                     controller.ingredients,
                     int.parse(controller.caloriFieldController.text.trim()),
                     int.parse(controller.budgetFieldController.text.trim()),
@@ -80,12 +80,15 @@ class AddProductButton extends StatelessWidget {
               snackBarText = "Məhsulun maddi dəyəri daxil edilməyib";
             } else if (controller.preparation.isEmpty) {
               snackBarText = "Hazırlama mərhələləri daxil edilməyib";
-            }else if (!controller.caloriFieldController.text.isNumericOnly) {
-              snackBarText = "Kalori dəyərinə yalnız rəqəm daxil edə bilərsiniz!";
-            }else if (!controller.timeFieldController.text.isNumericOnly) {
-              snackBarText = "Bişirilmə müddətinə yalnız rəqəm daxil edə bilərsiniz!";
-            }else if (!controller.budgetFieldController.text.isNumericOnly) {
-              snackBarText = "Büdcə indeksinə yalnız rəqəm daxil edə bilərsiniz!";
+            } else if (!controller.caloriFieldController.text.isNumericOnly) {
+              snackBarText =
+                  "Kalori dəyərinə yalnız rəqəm daxil edə bilərsiniz!";
+            } else if (!controller.timeFieldController.text.isNumericOnly) {
+              snackBarText =
+                  "Bişirilmə müddətinə yalnız rəqəm daxil edə bilərsiniz!";
+            } else if (!controller.budgetFieldController.text.isNumericOnly) {
+              snackBarText =
+                  "Büdcə indeksinə yalnız rəqəm daxil edə bilərsiniz!";
             }
 
             ScaffoldMessenger.of(context).showSnackBar(

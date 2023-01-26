@@ -29,6 +29,11 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     "Balıq yeməkləri",
     "Dietik yeməklər",
   ];
+  final List<String> country = [
+    "Milli mətbəx",
+    "Türk mətbəxi",
+    "Əcnəbi yeməkləri",
+  ];
 
   int preparationStepIndex = 100;
 
@@ -95,6 +100,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         categorySelector(),
+                        countrySelector(),
                       ],
                     ),
                     MultiSelectDialogField(
@@ -400,6 +406,25 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
       onChanged: (value) {
         setState(() {
           controller.selectedCategory = value!;
+        });
+      },
+    );
+  }
+
+  DropdownButton<String> countrySelector() {
+    return DropdownButton<String>(
+      menuMaxHeight: 300,
+      alignment: Alignment.center,
+      value: controller.selectedCountry,
+      items: country.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          controller.selectedCountry = value!;
         });
       },
     );

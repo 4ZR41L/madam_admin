@@ -6,6 +6,7 @@ class Product {
   final String name;
   final String imagePath;
   final String category;
+  final String country;
   final List relatedProducts;
   RxList ingredients;
   final int calori;
@@ -17,6 +18,7 @@ class Product {
       this.name,
       this.imagePath,
       this.category,
+      this.country,
       this.ingredients,
       this.calori,
       this.budgetIndex,
@@ -42,6 +44,7 @@ class Product {
       'name': name,
       'imagePath': imagePath,
       'category': category,
+      'country': country,
       'ingredients': ingredients,
       'calori': calori,
       'budgetIndex': budgetIndex,

@@ -2,15 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
 class Controller extends GetxController {
-
   List relatedProducts = [];
   RxList ingredients = [].obs;
   RxList preparation = [].obs;
   String selectedCategory = "Ət yeməkləri";
+  String selectedCountry = "Milli mətbəx";
   RxInt allProductsCount = 0.obs;
-
-
-
 
   final imagePathController = TextEditingController();
   final nameFieldController = TextEditingController();
@@ -21,5 +18,4 @@ class Controller extends GetxController {
 
   final ingredientKeyController = TextEditingController();
   final ingredientValueController = TextEditingController();
-
 }

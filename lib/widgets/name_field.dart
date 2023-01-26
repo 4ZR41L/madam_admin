@@ -5,7 +5,7 @@ import '../controller.dart';
 
 class NameFiled extends StatelessWidget {
   final Controller controller = Get.find();
-   NameFiled({
+  NameFiled({
     Key? key,
   }) : super(key: key);
 
@@ -22,7 +22,6 @@ class NameFiled extends StatelessWidget {
         maxLines: 1,
         showCursor: true,
         keyboardType: TextInputType.text,
-
         expands: false,
         scrollPhysics: const BouncingScrollPhysics(),
         decoration: const InputDecoration(
