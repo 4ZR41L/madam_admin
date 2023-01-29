@@ -28,11 +28,21 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     "Toyuq yeməkləri",
     "Balıq yeməkləri",
     "Dietik yeməklər",
+    "Xəmir yeməkləri",
+    "Şorbalar",
+    "Salatlar",
+    "Desertlər",
+    "Kompotlar",
+    "Turşular",
+    "Mürəbbələr",
+    "Kokteyllər",
+
   ];
   final List<String> country = [
-    "Milli mətbəx",
-    "Türk mətbəxi",
-    "Əcnəbi yeməkləri",
+    "AZE",
+    "Türk",
+    "Rus",
+    "World"
   ];
 
   int preparationStepIndex = 100;

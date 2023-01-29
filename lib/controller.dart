@@ -6,7 +6,7 @@ class Controller extends GetxController {
   RxList ingredients = [].obs;
   RxList preparation = [].obs;
   String selectedCategory = "Ət yeməkləri";
-  String selectedCountry = "Milli mətbəx";
+  String selectedCountry = "AZE";
   RxInt allProductsCount = 0.obs;
 
   final imagePathController = TextEditingController();
