@@ -36,7 +36,6 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     "Turşular",
     "Mürəbbələr",
     "Kokteyllər",
-
   ];
   final List<String> country = [
     "AZE",
@@ -71,6 +70,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       floatingActionButton: AddProductButton(),
       backgroundColor: primaryColor100,
@@ -93,6 +93,10 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                   Obx(() =>  Image.network( controller.imagePathController.text.isEmpty ? controller.imagePath.value : controller.imagePathController.text ,
+                       width: double.infinity,
+                       height: 200,
+                       fit: BoxFit.cover)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       mainAxisSize: MainAxisSize.max,
@@ -102,54 +106,68 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                         Expanded(
                           child: ImageField(),
                         ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        categorySelector(),
                         countrySelector(),
+
                       ],
                     ),
-                    MultiSelectDialogField(
-                      separateSelectedItems: true,
-                      searchable: true,
-                      searchHint: 'Axtar',
-                      cancelText: const Text("Ləğv et"),
-                      confirmText: const Text('Seç'),
+                    MultiSelectChipField(
                       items: [
-                        for (var i in allProducts.keys) MultiSelectItem(i, i)
+                        for(var i in categories)
+                        MultiSelectItem <String?>(i, i),
                       ],
-                      title: const Text("Məhsullar"),
-                      selectedColor: Colors.indigo,
+                      title: const Text("Kateqoriyalar"),
+                      headerColor: Colors.indigo.withOpacity(0.5),
                       decoration: BoxDecoration(
-                        color: Colors.indigo.withOpacity(0.1),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(40)),
-                        border: Border.all(
-                          color: primaryColor!,
-                          width: 1,
-                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.indigo, width: 1.8, ),
                       ),
-                      buttonIcon: const Icon(Icons.chevron_right),
-                      buttonText: const Text(
-                        "Əlaqəli məhsullar",
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 16,
-                        ),
-                      ),
-                      onConfirm: (results) {
-                        controller.relatedProducts.clear();
-
-                        for (var i in results) {
-                          controller.relatedProducts.add(allProducts[i]);
-                        }
-
-                        //_selectedAnimals = results;
+                      selectedChipColor: Colors.indigo.withOpacity(0.5),
+                      selectedTextStyle: const TextStyle(color: Colors.indigo),
+                      onTap: (values) {
+                        controller.selectedCategory = values;
                       },
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: MultiSelectDialogField(
+                        separateSelectedItems: true,
+                        searchable: true,
+                        searchHint: 'Axtar',
+                        cancelText: const Text("Ləğv et"),
+                        confirmText: const Text('Seç'),
+                        items: [
+                          for (var i in allProducts.keys) MultiSelectItem(i, i)
+                        ],
+                        title: const Text("Məhsullar"),
+                        selectedColor: Colors.indigo,
+                        decoration: BoxDecoration(
+                          color: Colors.indigo.withOpacity(0.1),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(40)),
+                          border: Border.all(
+                            color: primaryColor!,
+                            width: 1,
+                          ),
+                        ),
+                        buttonIcon: const Icon(Icons.chevron_right),
+                        buttonText: const Text(
+                          "Əlaqəli məhsullar",
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
+                          ),
+                        ),
+                        onConfirm: (results) {
+                          controller.relatedProducts.clear();
+
+                          for (var i in results) {
+                            controller.relatedProducts.add(allProducts[i]);
+                          }
+
+                          //_selectedAnimals = results;
+                        },
+                      ),
                     ),
                     const SizedBox(
                       height: 20,
@@ -402,24 +420,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
     );
   }
 
-  DropdownButton<String> categorySelector() {
-    return DropdownButton<String>(
-      menuMaxHeight: 300,
-      alignment: Alignment.center,
-      value: controller.selectedCategory,
-      items: categories.map<DropdownMenuItem<String>>((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          controller.selectedCategory = value!;
-        });
-      },
-    );
-  }
+
 
   DropdownButton<String> countrySelector() {
     return DropdownButton<String>(

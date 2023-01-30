@@ -5,9 +5,10 @@ class Controller extends GetxController {
   List relatedProducts = [];
   RxList ingredients = [].obs;
   RxList preparation = [].obs;
-  String selectedCategory = "Ət yeməkləri";
+  List <String?> selectedCategory = ["Ət yeməkləri"];
   String selectedCountry = "AZE";
   RxInt allProductsCount = 0.obs;
+  RxString imagePath = 'https://images.squarespace-cdn.com/content/v1/53b839afe4b07ea978436183/1608506169128-S6KYNEV61LEP5MS1UIH4/traditional-food-around-the-world-Travlinmad.jpg'.obs;
 
   final imagePathController = TextEditingController();
   final nameFieldController = TextEditingController();

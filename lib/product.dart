@@ -5,7 +5,7 @@ class Product {
   late String id;
   final String name;
   final String imagePath;
-  final String category;
+  final List <String?> category;
   final String country;
   final List relatedProducts;
   RxList ingredients;
@@ -50,7 +50,8 @@ class Product {
       'budgetIndex': budgetIndex,
       'cookingTime': cookingTime,
       'preparation': preparation,
-      'relatedProducts': relatedProducts
+      'relatedProducts': relatedProducts,
+      'favorited': []
     };
 
     // with this method we create new document with specified data

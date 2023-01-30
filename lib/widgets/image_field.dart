@@ -23,6 +23,10 @@ class ImageField extends StatelessWidget {
         maxLines: 1,
         showCursor: true,
         keyboardType: TextInputType.text,
+        onChanged: (value) {
+          controller.imagePath.value = controller.imagePathController.text;
+        },
+
 
         expands: false,
         scrollPhysics: const BouncingScrollPhysics(),
