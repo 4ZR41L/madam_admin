@@ -8,7 +8,7 @@ class Product {
   final List <String?> category;
   final String country;
   final List relatedProducts;
-  RxList ingredients;
+  RxMap ingredients;
   final int calori;
   final int budgetIndex;
   final int cookingTime;

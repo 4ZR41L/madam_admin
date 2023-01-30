@@ -115,6 +115,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                         for(var i in categories)
                         MultiSelectItem <String?>(i, i),
                       ],
+                      initialValue: controller.selectedCategory,
                       title: const Text("Kateqoriyalar"),
                       headerColor: Colors.indigo.withOpacity(0.5),
                       decoration: BoxDecoration(
@@ -305,7 +306,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
         child: Obx(() => ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                for (var i in controller.ingredients)
+                for (var i in controller.ingredients.keys)
                   Card(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     shape: const StadiumBorder(),
@@ -332,7 +333,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                             Padding(
                               padding: const EdgeInsets.only(right: 10),
                               child: Text(
-                                " ${i.values.first} ${i.keys.first}",
+                                "${controller.ingredients[i]} $i",
                                 style: const TextStyle(color: Colors.white),
                               ),
                             ),
@@ -406,10 +407,8 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
               if (controller.ingredientKeyController.text.trim().isNotEmpty &&
                   controller.ingredientValueController.text.trim().isNotEmpty) {
                 setState(() {
-                  controller.ingredients.add({
-                    controller.ingredientKeyController.text:
-                        controller.ingredientValueController.text
-                  });
+                  controller.ingredients[controller.ingredientKeyController.text] = controller.ingredientValueController.text;
+
                 });
                 controller.ingredientKeyController.text = '';
                 controller.ingredientValueController.text = '';

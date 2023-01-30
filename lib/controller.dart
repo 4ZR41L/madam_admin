@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 class Controller extends GetxController {
   List relatedProducts = [];
-  RxList ingredients = [].obs;
+  RxMap ingredients = {}.obs;
   RxList preparation = [].obs;
   List <String?> selectedCategory = ["Ət yeməkləri"];
   String selectedCountry = "AZE";

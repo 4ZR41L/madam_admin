@@ -20,10 +20,10 @@ class AddProductButton extends StatelessWidget {
     controller.preparationStepController.text = '';
     controller.ingredientKeyController.text = '';
     controller.ingredientValueController.text = '';
-
     controller.relatedProducts.clear();
     controller.ingredients.clear();
     controller.preparation.clear();
+    controller.selectedCategory.clear();
   }
 
   @override
@@ -40,6 +40,8 @@ class AddProductButton extends StatelessWidget {
               controller.budgetFieldController.text.trim().isNumericOnly &&
               controller.ingredients.isNotEmpty &&
               controller.preparation.isNotEmpty) {
+            controller.preparation.add('Nuş olsun!');
+
             Product(
                     controller.nameFieldController.text.trim(),
                     controller.imagePathController.text.trim(),
